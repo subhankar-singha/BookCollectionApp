@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Manager</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f8ff;
+      margin: 0;
+      padding: 40px;
+      color: #333;
+    }
+
+    h1 {
+      color: #2a2e5a;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      max-width: 500px;
+      margin: 0 auto 40px;
+    }
+
+    .form-container h3 {
+      margin-top: 0;
+      color: #374785;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #dcdcdc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #5c67f2;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #454ec9;
+    }
+
+    #book-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .book {
+      background-color: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .book:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .book strong {
+      font-size: 18px;
+      color: #1e1e80;
+    }
+
+    .book p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .book button {
+      margin-top: 10px;
+      background-color: #ff4c4c;
+    }
+
+    .book button:hover {
+      background-color: #d93636;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Book Manager</h1>
+
+  <div class="form-container">
+    <h3>Add a New Book</h3>
+    <input type="text" id="title" placeholder="Book Title">
+    <input type="text" id="author" placeholder="Author">
+    <input type="text" id="description" placeholder="Description">
+    <button onclick="addBook()"> Add Book</button>
+  </div>
+
+  <div id="book-list"></div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api/books';
+
+    async function fetchBooks() {
+      const res = await fetch(API_BASE);
+      const books = await res.json();
+      const bookList = document.getElementById('book-list');
+      bookList.innerHTML = '';
+      books.forEach(book => {
+        bookList.innerHTML += `
+          <div class="book">
+            <strong>${book.title}</strong>
+            <p>Author: ${book.author}</p>
+            <p>Description: ${book.description}</p>
+            <button onclick="deleteBook('${book.title}')"> Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    async function addBook() {
+      const title = document.getElementById('title').value;
+      const author = document.getElementById('author').value;
+      const description = document.getElementById('description').value;
+
+      if (!title || !author || !description) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author, description })
+      });
+
+      document.getElementById('title').value = '';
+      document.getElementById('author').value = '';
+      document.getElementById('description').value = '';
+
+      fetchBooks();
+    }
+
+    async function deleteBook(title) {
+      await fetch(`${API_BASE}/${title}`, { method: 'DELETE' });
+      fetchBooks();
+    }
+    fetchBooks();
+  </script>
+
+</body>
+</html>
